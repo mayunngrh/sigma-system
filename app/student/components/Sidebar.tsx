@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -71,6 +72,7 @@ export default function Sidebar({
   onCollapseToggle,
 }: SidebarProps) {
   const pathname = usePathname();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const isActive = (href: string) => pathname === href;
 
@@ -156,27 +158,38 @@ export default function Sidebar({
         </nav>
 
         {/* Bottom Section - User Info */}
-        <div className={`p-6 pt-4 border-t border-white/20 ${isCollapsed ? 'px-3' : ''}`}>
-          <div className={`flex items-center gap-3 ${isCollapsed ? 'flex-col' : ''} px-4 py-3`}>
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+        <div className={`p-6 pt-4 border-t border-white/20 ${isCollapsed ? 'px-3' : ''} relative`}>
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            title={isCollapsed ? 'User Menu' : undefined}
+            className={`w-full flex items-center gap-3 ${isCollapsed ? 'flex-col' : ''} px-4 py-3 rounded-lg hover:bg-white/10 transition group`}
+          >
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-white/30 transition">
               JD
             </div>
             {!isCollapsed && (
-              <div className="text-sm">
+              <div className="text-sm text-left">
                 <p className="font-semibold">John Doe</p>
                 <p className="text-xs text-teal-100">Student</p>
               </div>
             )}
-          </div>
-          <button
-            title={isCollapsed ? 'Logout' : undefined}
-            className={`w-full mt-3 flex items-center gap-2 px-4 py-2 text-sm font-medium text-teal-100 hover:bg-white/10 rounded-lg transition ${
-              isCollapsed ? 'justify-center' : 'justify-start'
-            }`}
-          >
-            <LogoutIcon />
-            {!isCollapsed && <span>Logout</span>}
           </button>
+
+          {/* Popup Menu */}
+          {showUserMenu && (
+            <div className={`absolute bottom-full ${isCollapsed ? 'left-1/2 -translate-x-1/2' : 'left-6 right-6'} mb-3 bg-white rounded-lg shadow-lg z-10`}>
+              <button
+                onClick={() => {
+                  setShowUserMenu(false);
+                  // Handle logout here
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-[#0d8b8b] hover:bg-gray-100 rounded-lg transition first:rounded-t-lg last:rounded-b-lg"
+              >
+                <LogoutIcon />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
