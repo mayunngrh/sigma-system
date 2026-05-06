@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 
 interface Request {
   id: string;
@@ -41,20 +41,23 @@ const formatUserType = (type: string) => {
 
 export default function MyRequests() {
   const router = useRouter();
-  const [requests, setRequests] = useState<Request[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetch('/api/requests')
-      .then(res => {
-        if (res.status === 401) { router.push('/auth/login'); return null; }
-        return res.json();
-      })
-      .then(data => { if (data) setRequests(data.requests || []); })
-      .catch(() => setError('Gagal memuat data permintaan'))
-      .finally(() => setLoading(false));
-  }, [router]);
+  const { data, isLoading: loading, error: queryError } = useQuery({
+    queryKey: ['requests'],
+    queryFn: async () => {
+      const res = await fetch('/api/requests');
+      if (res.status === 401) {
+        router.push('/auth/login');
+        return [];
+      }
+      if (!res.ok) throw new Error('Gagal memuat data permintaan');
+      const data = await res.json();
+      return data.requests || [];
+    },
+  });
+
+  const requests = data || [];
+  const error = queryError ? 'Gagal memuat data permintaan' : '';
 
   const counts = {
     total: requests.length,
