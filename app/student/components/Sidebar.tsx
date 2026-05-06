@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/app/lib/auth-context';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -72,6 +73,8 @@ export default function Sidebar({
   onCollapseToggle,
 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOut } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const isActive = (href: string) => pathname === href;
@@ -179,9 +182,10 @@ export default function Sidebar({
           {showUserMenu && (
             <div className={`absolute bottom-full ${isCollapsed ? 'left-1/2 -translate-x-1/2' : 'left-6 right-6'} mb-3 bg-white rounded-lg shadow-lg z-10`}>
               <button
-                onClick={() => {
+                onClick={async () => {
                   setShowUserMenu(false);
-                  // Handle logout here
+                  await signOut();
+                  router.push('/auth/login');
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-[#0d8b8b] hover:bg-gray-100 rounded-lg transition first:rounded-t-lg last:rounded-b-lg"
               >
