@@ -45,6 +45,7 @@ export default function RequestForm() {
     urgency: 'normal',
     notes: '',
   });
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -59,6 +60,18 @@ export default function RequestForm() {
     setError('');
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      if (selectedFile.size > 500 * 1024) {
+        setError('Ukuran file maksimal 500KB');
+        return;
+      }
+      setFile(selectedFile);
+      setError('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -69,16 +82,19 @@ export default function RequestForm() {
 
     setLoading(true);
     try {
+      const formPayload = new FormData();
+      formPayload.append('userType', formData.userType);
+      formPayload.append('requestType', formData.requestType);
+      formPayload.append('purpose', formData.purpose);
+      formPayload.append('urgency', formData.urgency);
+      formPayload.append('notes', formData.notes);
+      if (file) {
+        formPayload.append('file', file);
+      }
+
       const res = await fetch('/api/requests', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userType: formData.userType,
-          requestType: formData.requestType,
-          purpose: formData.purpose,
-          urgency: formData.urgency,
-          notes: formData.notes,
-        }),
+        body: formPayload,
       });
 
       const data = await res.json();
@@ -201,7 +217,7 @@ export default function RequestForm() {
           </div>
 
           {/* Notes */}
-          <div>
+          <div className="mb-6">
             <label className="block text-sm font-semibold text-[#1a2332] mb-2">Catatan Tambahan</label>
             <textarea
               name="notes" value={formData.notes} onChange={handleInputChange}
@@ -210,6 +226,32 @@ export default function RequestForm() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#0d8b8b] focus:ring-2 focus:ring-[#0d8b8b]/20 resize-none"
               disabled={loading}
             />
+          </div>
+
+          {/* File Upload */}
+          <div>
+            <label className="block text-sm font-semibold text-[#1a2332] mb-2">File Pendukung</label>
+            <div className="relative">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                disabled={loading}
+                className="hidden"
+                id="file-input"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="file-input"
+                className="flex items-center justify-center w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#0d8b8b] hover:bg-[#0d8b8b]/5 transition disabled:opacity-50"
+              >
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-700">
+                    {file ? file.name : 'Klik untuk memilih file atau drag & drop'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, JPG, PNG (Max 500KB)</p>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
 

@@ -74,7 +74,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const isActive = (href: string) => pathname === href;
@@ -168,11 +168,11 @@ export default function Sidebar({
             className={`w-full flex items-center gap-3 ${isCollapsed ? 'flex-col' : ''} px-4 py-3 rounded-lg hover:bg-white/10 transition group`}
           >
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-sm shrink-0 group-hover:bg-white/30 transition">
-              JD
+              {user?.fullName.charAt(0).toUpperCase()}
             </div>
             {!isCollapsed && (
               <div className="text-sm text-left">
-                <p className="font-semibold">John Doe</p>
+                <p className="font-semibold">{user?.fullName}</p>
                 <p className="text-xs text-teal-100">Student</p>
               </div>
             )}

@@ -16,10 +16,11 @@ interface Request {
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  pending:     { label: 'Menunggu',  color: 'bg-yellow-100 text-yellow-800' },
-  in_progress: { label: 'Diproses', color: 'bg-blue-100 text-blue-800' },
-  completed:   { label: 'Selesai',  color: 'bg-green-100 text-green-800' },
-  rejected:    { label: 'Ditolak',  color: 'bg-red-100 text-red-800' },
+  pending:     { label: 'Menunggu',   color: 'bg-yellow-100 text-yellow-800' },
+  in_progress: { label: 'Diproses',  color: 'bg-blue-100 text-blue-800' },
+  completed:   { label: 'Selesai',   color: 'bg-green-100 text-green-800' },
+  rejected:    { label: 'Ditolak',   color: 'bg-red-100 text-red-800' },
+  perbaikan:   { label: 'Perbaikan', color: 'bg-orange-100 text-orange-800' },
 };
 
 const urgencyConfig: Record<string, { label: string; color: string }> = {
@@ -54,6 +55,8 @@ export default function MyRequests() {
       const data = await res.json();
       return data.requests || [];
     },
+    staleTime: 0,
+    refetchInterval: 5000,
   });
 
   const requests = data || [];
@@ -67,7 +70,13 @@ export default function MyRequests() {
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      {loading && (
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+          <div className="w-12 h-12 border-4 border-[#0d8b8b] border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+      <div className="space-y-6">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-[#1a2332] mb-2">Permintaan Saya</h1>
         <p className="text-gray-600">Kelola dan pantau semua permintaan surat akademik Anda</p>
@@ -117,14 +126,26 @@ export default function MyRequests() {
             {requests.map(request => {
               const status = statusConfig[request.status] || statusConfig.pending;
               const urgency = urgencyConfig[request.urgency] || urgencyConfig.normal;
+              const hasAdminFeedback = !!request.admin_notes;
+              const bgClass = hasAdminFeedback ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50';
+
               return (
-                <div key={request.id} className="p-6 hover:bg-gray-50 transition">
+                <div
+                  key={request.id}
+                  className={`p-6 transition cursor-pointer ${bgClass}`}
+                  onClick={() => router.push(`/student/my-requests/${request.id}`)}
+                >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h3 className="font-semibold text-[#1a2332] text-lg">
                           {formatRequestType(request.request_type)}
                         </h3>
+                        {hasAdminFeedback && (
+                          <span className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded">
+                            Ada Feedback
+                          </span>
+                        )}
                         <span className={`text-xs font-medium ${urgency.color}`}>
                           • {urgency.label}
                         </span>
@@ -133,8 +154,8 @@ export default function MyRequests() {
                         {formatUserType(request.user_type)} — {request.purpose}
                       </p>
                       {request.admin_notes && (
-                        <p className="text-xs text-red-600 mt-1 bg-red-50 px-3 py-1 rounded">
-                          Catatan admin: {request.admin_notes}
+                        <p className="text-xs text-blue-700 mt-1 bg-blue-50 px-3 py-1 rounded">
+                          {request.admin_notes}
                         </p>
                       )}
                       <p className="text-xs text-gray-400 mt-2">
@@ -154,5 +175,6 @@ export default function MyRequests() {
         )}
       </div>
     </div>
+    </>
   );
 }

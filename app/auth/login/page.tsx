@@ -28,8 +28,12 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      await signIn(formData.username, formData.password);
-      router.push('/student/dashboard');
+      const user = await signIn(formData.username, formData.password);
+      if (user.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/student/dashboard');
+      }
     } catch (err: any) {
       setError(err.message || 'Login gagal. Silakan coba lagi.');
     } finally {

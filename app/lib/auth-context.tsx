@@ -51,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Login gagal');
     setUser(data.user);
+    return data.user;
   };
 
   const signOut = async () => {
